@@ -1,0 +1,5 @@
+[33mb5c8c32[m[33m ([m[1;36mHEAD[m[33m, [m[1;31morigin/main[m[33m, [m[1;32magents/phishguard-mlops-pipeline-setup[m[33m)[m HEAD@{0}: pull origin main --rebase (start): checkout b5c8c326cc6695e4321d852611e4c020aa96cadf
+[33m0a1bcf8[m[33m ([m[1;32mmain[m[33m)[m HEAD@{1}: commit: t
+[33m6f62f42[m HEAD@{2}: commit: second
+[33m5b20ddc[m HEAD@{3}: commit: second change
+[33m4d6bf44[m HEAD@{4}: commit (initial): my first commit
