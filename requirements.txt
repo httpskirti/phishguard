@@ -1,4 +1,16 @@
 pandas
 numpy
+scipy
+scikit-learn
+xgboost
+sqlalchemy
+psycopg2-binary
+python-dotenv
+pyyaml
+mlflow
+dagshub
+fastapi
+uvicorn
+python-multipart
 seaborn
--e.
+-e .
