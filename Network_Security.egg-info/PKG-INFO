@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: Network_Security
+Version: 0.0.1
+Author: kirti
+Author-email: kirtisharma7666@gmail.com
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: Scikit-learn
+Dynamic: author
+Dynamic: author-email
+Dynamic: requires-dist

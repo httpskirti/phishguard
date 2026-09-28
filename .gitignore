@@ -1,1 +1,11 @@
 myvenv/
+.env
+Artifacts/
+logs/
+final_model/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.coverage
+e --abort
