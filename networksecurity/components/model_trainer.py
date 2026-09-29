@@ -49,11 +49,14 @@ class ModelTrainer:
             raise NetworkSecurityException(e, sys)
 
     def track_mlflow(self, model, classification_metric: ClassificationMetricArtifact, run_name: str):
-        with mlflow.start_run(run_name=run_name):
-            mlflow.log_metric("f1_score", classification_metric.f1_score)
-            mlflow.log_metric("precision_score", classification_metric.precision_score)
-            mlflow.log_metric("recall_score", classification_metric.recall_score)
-            mlflow.sklearn.log_model(model, "model")
+        try:
+            with mlflow.start_run(run_name=run_name):
+                mlflow.log_metric("f1_score", classification_metric.f1_score)
+                mlflow.log_metric("precision_score", classification_metric.precision_score)
+                mlflow.log_metric("recall_score", classification_metric.recall_score)
+                mlflow.sklearn.log_model(model, "model")
+        except Exception as e:
+            logger.warning(f"MLflow tracking skipped or failed: {e}")
 
     def train_model(self, X_train, y_train, X_test, y_test) -> ModelTrainerArtifact:
         models = {

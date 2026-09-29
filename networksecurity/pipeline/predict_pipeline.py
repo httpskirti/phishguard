@@ -35,9 +35,9 @@ class PredictPipeline:
 
             df = dataframe.copy()
             if "id" in df.columns:
-                df = df.drop(columns=["id"], axis=1)
+                df = df.drop(columns=["id"])
             if TARGET_COLUMN in df.columns:
-                df = df.drop(columns=[TARGET_COLUMN], axis=1)
+                df = df.drop(columns=[TARGET_COLUMN])
 
             predictions = network_model.predict(df)
             logger.info(f"Generated {len(predictions)} predictions successfully")

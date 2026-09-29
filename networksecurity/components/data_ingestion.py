@@ -23,16 +23,34 @@ class DataIngestion:
             raise NetworkSecurityException(e, sys)
 
     def export_table_as_dataframe(self):
-        """Pull raw records from the PostgreSQL table into a DataFrame."""
+        """Pull raw records from the PostgreSQL table or fallback to local phisingData.csv."""
         try:
             table_name = self.data_ingestion_config.table_name
-            engine = create_engine(POSTGRES_URL)
+            if POSTGRES_URL:
+                try:
+                    logger.info(f"Connecting to PostgreSQL database to read table '{table_name}'")
+                    engine = create_engine(POSTGRES_URL)
+                    df = pd.read_sql(f"SELECT * FROM {table_name}", engine)
+                    if "id" in df.columns.to_list():
+                        df = df.drop(columns=["id"])
+                    df.replace({"na": np.nan}, inplace=True)
+                    logger.info(f"Loaded {len(df)} records from PostgreSQL table '{table_name}'")
+                    return df
+                except Exception as db_err:
+                    logger.warning(f"Failed to read from PostgreSQL ({db_err}). Attempting fallback to local dataset file.")
 
-            df = pd.read_sql(f"SELECT * FROM {table_name}", engine)
-            if "id" in df.columns.to_list():
-                df = df.drop(columns=["id"], axis=1)
-            df.replace({"na": np.nan}, inplace=True)
-            return df
+            # Local CSV fallback
+            local_csv_paths = ["phisingData.csv", os.path.join("data_schema", "phisingData.csv")]
+            for csv_path in local_csv_paths:
+                if os.path.exists(csv_path):
+                    logger.info(f"Reading dataset from local file: {csv_path}")
+                    df = pd.read_csv(csv_path)
+                    if "id" in df.columns.to_list():
+                        df = df.drop(columns=["id"])
+                    df.replace({"na": np.nan}, inplace=True)
+                    return df
+
+            raise FileNotFoundError("Could not read from PostgreSQL and local 'phisingData.csv' not found.")
         except Exception as e:
             raise NetworkSecurityException(e, sys)
 

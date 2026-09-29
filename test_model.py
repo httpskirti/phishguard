@@ -31,7 +31,7 @@ def evaluate_saved_model():
             raise KeyError(f"Target column '{TARGET_COLUMN}' not present in test data")
 
         # Separate features and target
-        X_test = df.drop(columns=[TARGET_COLUMN], axis=1)
+        X_test = df.drop(columns=[TARGET_COLUMN])
         y_test = df[TARGET_COLUMN].replace(-1, 0)
 
         # Load saved model artifacts
