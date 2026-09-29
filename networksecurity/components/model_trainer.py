@@ -1,5 +1,7 @@
+import json
 import os
 import sys
+from datetime import datetime, timezone
 
 import mlflow
 import dagshub
@@ -120,8 +122,20 @@ class ModelTrainer:
         save_object(self.model_trainer_config.trained_model_file_path, network_model)
         save_object("final_model/model.pkl", best_model)
         save_object("final_model/preprocessor.pkl", preprocessor)
-        
 
+        # ── Persist metrics alongside the model so /model-info can read
+        #    them without needing MLflow access at serving time. ──────────
+        metrics_data = {
+            "model_type": best_model_name,
+            "f1_score": round(test_metric.f1_score, 6),
+            "precision_score": round(test_metric.precision_score, 6),
+            "recall_score": round(test_metric.recall_score, 6),
+            "trained_at": datetime.now(timezone.utc).isoformat(),
+        }
+        os.makedirs("final_model", exist_ok=True)
+        with open("final_model/metrics.json", "w") as mf:
+            json.dump(metrics_data, mf, indent=2)
+        logger.info(f"Saved final_model/metrics.json: {metrics_data}")
 
         return ModelTrainerArtifact(
             trained_model_file_path=self.model_trainer_config.trained_model_file_path,

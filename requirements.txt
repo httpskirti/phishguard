@@ -13,4 +13,7 @@ fastapi
 uvicorn
 python-multipart
 seaborn
+requests
+python-whois
+beautifulsoup4
 -e .
