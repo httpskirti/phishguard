@@ -455,13 +455,29 @@ def _analyze_html(
     soup = BeautifulSoup(html, "html.parser")
     page_lower = html.lower()
 
+    def _get_root_domain(h: str) -> str:
+        """Extract apex/registered domain (e.g. 'google.com' from 'maps.google.com')."""
+        h = h.lower().strip(".")
+        parts = h.split(".")
+        if len(parts) >= 2:
+            if len(parts) >= 3 and parts[-2] in ("co", "com", "org", "net", "gov", "edu") and len(parts[-1]) == 2:
+                return ".".join(parts[-3:])
+            return ".".join(parts[-2:])
+        return h
+
+    target_root = _get_root_domain(hostname)
+
     def _is_external(src_url: str) -> bool:
         """Check if a resource URL points to an external domain."""
         if not src_url or src_url.startswith("#") or src_url.startswith("javascript:"):
             return False
         try:
             parsed = _urlparse(src_url)
-            if parsed.hostname and parsed.hostname != hostname:
+            if parsed.hostname:
+                src_h = parsed.hostname.lower()
+                target_h = hostname.lower()
+                if src_h == target_h or src_h.endswith("." + target_h) or _get_root_domain(src_h) == target_root:
+                    return False
                 return True
         except Exception:
             pass
@@ -514,6 +530,7 @@ def _analyze_html(
             features["URL_of_Anchor"] = 0
         else:
             features["URL_of_Anchor"] = -1
+            warnings.append(f"Over {ratio:.0%} of anchor links point to external or void destinations.")
     else:
         features["URL_of_Anchor"] = 1
 
@@ -688,12 +705,15 @@ def extract_features(url: str) -> Dict[str, Any]:
         warnings.append(f"Non-standard port {parsed.port} detected.")
 
     # ══════════════════════════════════════════════════════════════════════
-    # SECTION 2 — SSL/TLS certificate (SKIPPED — see ALWAYS_LEGITIMATE)
-    # Modern sites use 60-90 day auto-rotating certs; the old "≥1 year"
-    # heuristic unfairly penalises Google, GitHub, Wikipedia, etc.
+    # SECTION 2 — SSL/TLS certificate
     # ══════════════════════════════════════════════════════════════════════
 
-    features["SSLfinal_State"] = 1  # always treat as legitimate
+    if parsed.scheme.lower() == "http":
+        features["SSLfinal_State"] = -1
+        warnings.append("Site is served over unencrypted HTTP (no SSL/TLS).")
+    else:
+        # Modern HTTPS: avoid penalizing 60-90 day rotating certs
+        features["SSLfinal_State"] = 1
 
     # ══════════════════════════════════════════════════════════════════════
     # SECTION 3 — WHOIS (domain age, registration length, abnormal URL)

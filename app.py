@@ -196,16 +196,26 @@ def run_model(url: str, features: Dict[str, int]) -> tuple[str, float]:
         try:
             proba = pipeline.predict_proba(df)
             # proba shape: (1, 2) → column 0 = phishing probability (class 0 is phishing)
-            risk_score = float(proba[0][0])
+            model_risk = float(proba[0][0])
         except Exception as exc:
-            logger.warning(f"predict_proba unavailable ({exc}); deriving risk score from features")
-            phishing_signals = sum(1 for v in features.values() if v == -1)
-            suspicious_signals = sum(1 for v in features.values() if v == 0)
-            signal_ratio = (phishing_signals + 0.5 * suspicious_signals) / len(FEATURE_COLUMNS)
-            if raw == 0:
-                risk_score = max(0.55, min(0.98, 0.5 + signal_ratio))
-            else:
-                risk_score = min(0.45, max(0.02, signal_ratio))
+            logger.warning(f"predict_proba unavailable ({exc})")
+            model_risk = 0.85 if raw == 0 else 0.15
+
+        phishing_signals = sum(1 for v in features.values() if v == -1)
+        safe_signals = sum(1 for v in features.values() if v == 1)
+
+        # Calibrate risk score when explicit high-risk patterns or clean domains exist:
+        if features.get("having_IP_Address") == -1:
+            # Using raw IP address in URL is an explicit, high-confidence phishing technique
+            risk_score = max(model_risk, min(0.92, 0.65 + 0.07 * phishing_signals))
+        elif phishing_signals >= 3:
+            # Multiple explicit phishing signals
+            risk_score = max(model_risk, min(0.95, 0.50 + 0.08 * phishing_signals))
+        elif phishing_signals == 0 and safe_signals >= 8:
+            # Completely clean domain (e.g. google.com, wikipedia.org)
+            risk_score = min(model_risk, 0.08)
+        else:
+            risk_score = model_risk
 
         verdict = "Phishing" if (risk_score >= 0.5 or raw == 0) else "Legitimate"
         return verdict, risk_score
