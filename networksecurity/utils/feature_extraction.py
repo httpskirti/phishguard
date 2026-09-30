@@ -75,6 +75,13 @@ ALWAYS_UNCHECKED: list[str] = [
     "Statistical_report",  # needs PhishTank/OpenPhish API (rate-limited)
 ]
 
+# Features that are skipped and always set to 1 (legitimate) because
+# the heuristic is outdated for modern web practices.
+ALWAYS_LEGITIMATE: list[str] = [
+    "SSLfinal_State",      # Modern sites use 60-90 day auto-rotating certs (Let's Encrypt),
+                           # the old "≥1 year = safe" heuristic penalises legitimate sites.
+]
+
 # Known URL-shortener domains.
 _SHORTENERS: set[str] = {
     "bit.ly", "tinyurl.com", "goo.gl", "ow.ly", "t.co",
@@ -681,14 +688,12 @@ def extract_features(url: str) -> Dict[str, Any]:
         warnings.append(f"Non-standard port {parsed.port} detected.")
 
     # ══════════════════════════════════════════════════════════════════════
-    # SECTION 2 — SSL/TLS certificate
+    # SECTION 2 — SSL/TLS certificate (SKIPPED — see ALWAYS_LEGITIMATE)
+    # Modern sites use 60-90 day auto-rotating certs; the old "≥1 year"
+    # heuristic unfairly penalises Google, GitHub, Wikipedia, etc.
     # ══════════════════════════════════════════════════════════════════════
 
-    ssl_val, ssl_warns = _check_ssl_certificate(hostname)
-    features["SSLfinal_State"] = ssl_val
-    warnings.extend(ssl_warns)
-    if ssl_val == -1 and not ssl_warns:
-        warnings.append("Site is served over plain HTTP (no SSL/TLS encryption).")
+    features["SSLfinal_State"] = 1  # always treat as legitimate
 
     # ══════════════════════════════════════════════════════════════════════
     # SECTION 3 — WHOIS (domain age, registration length, abnormal URL)
@@ -745,7 +750,7 @@ def extract_features(url: str) -> Dict[str, Any]:
             unchecked.append(feat)
             features[feat] = 0
         # Re-raise if DNS completely failed too (nothing to show)
-        if dns_val == -1 and ssl_val == -1:
+        if dns_val == -1:
             raise
 
     # ══════════════════════════════════════════════════════════════════════
