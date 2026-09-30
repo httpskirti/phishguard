@@ -191,25 +191,32 @@ def run_model(url: str, features: Dict[str, int]) -> tuple[str, float]:
         predictions = pipeline.predict(df)
         raw = int(predictions[0])   # 0 = phishing, 1 = legitimate (UCI convention)
 
-        # Try to get probability if the model supports it
+        # Try to get probability from the model
         risk_score: float
         try:
             proba = pipeline.predict_proba(df)
-            # proba shape: (1, 2) → column 0 = phishing probability
+            # proba shape: (1, 2) → column 0 = phishing probability (class 0 is phishing)
             risk_score = float(proba[0][0])
-        except AttributeError:
-            # Model doesn't expose predict_proba — derive from hard label
-            risk_score = 0.85 if raw == 0 else 0.15
+        except Exception as exc:
+            logger.warning(f"predict_proba unavailable ({exc}); deriving risk score from features")
+            phishing_signals = sum(1 for v in features.values() if v == -1)
+            suspicious_signals = sum(1 for v in features.values() if v == 0)
+            signal_ratio = (phishing_signals + 0.5 * suspicious_signals) / len(FEATURE_COLUMNS)
+            if raw == 0:
+                risk_score = max(0.55, min(0.98, 0.5 + signal_ratio))
+            else:
+                risk_score = min(0.45, max(0.02, signal_ratio))
 
-        verdict = "Phishing" if raw == 0 else "Legitimate"
+        verdict = "Phishing" if (risk_score >= 0.5 or raw == 0) else "Legitimate"
         return verdict, risk_score
 
     except FileNotFoundError:
         # Model not trained yet → heuristic fallback
         logger.warning("Model artefacts not found; using heuristic fallback.")
         phishing_signals = sum(1 for v in features.values() if v == -1)
-        risk = min(0.99, phishing_signals / len(FEATURE_COLUMNS))
-        verdict = "Phishing" if risk > 0.5 else "Legitimate"
+        suspicious_signals = sum(1 for v in features.values() if v == 0)
+        risk = min(0.99, max(0.01, (phishing_signals + 0.5 * suspicious_signals) / len(FEATURE_COLUMNS)))
+        verdict = "Phishing" if risk >= 0.5 else "Legitimate"
         return verdict, round(risk, 4)
 
 

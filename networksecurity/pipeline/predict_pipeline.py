@@ -44,3 +44,27 @@ class PredictPipeline:
             return predictions
         except Exception as e:
             raise NetworkSecurityException(e, sys)
+
+    def predict_proba(self, dataframe: pd.DataFrame):
+        try:
+            if not os.path.exists(self.model_path) or not os.path.exists(self.preprocessor_path):
+                raise FileNotFoundError(
+                    f"Model artifacts missing in '{os.path.dirname(self.model_path)}'. Please run training first."
+                )
+
+            logger.info("Loading model and preprocessor for probability prediction")
+            model = load_object(self.model_path)
+            preprocessor = load_object(self.preprocessor_path)
+            network_model = NetworkModel(preprocessor=preprocessor, model=model)
+
+            df = dataframe.copy()
+            if "id" in df.columns:
+                df = df.drop(columns=["id"])
+            if TARGET_COLUMN in df.columns:
+                df = df.drop(columns=[TARGET_COLUMN])
+
+            proba = network_model.predict_proba(df)
+            logger.info("Generated probabilities successfully")
+            return proba
+        except Exception as e:
+            raise NetworkSecurityException(e, sys)

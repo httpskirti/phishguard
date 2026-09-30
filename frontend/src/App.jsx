@@ -4,7 +4,6 @@ import ScanPanel from './components/ScanPanel';
 import ResultCard from './components/ResultCard';
 import HistoryList from './components/HistoryList';
 import StatsRow from './components/StatsRow';
-import Disclaimer from './components/Disclaimer';
 import AdminView from './components/AdminView';
 import AdminKeyModal from './components/AdminKeyModal';
 import { checkHealth, predictUrl, predictImage, fetchModelInfo } from './lib/api';
@@ -141,9 +140,6 @@ export default function App() {
 
       {/* ── Main content area ── */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-8 py-6 space-y-6">
-        {/* ── Persistent security disclaimer (always visible) ── */}
-        <Disclaimer />
-
         {/* ── Backend offline warning banner ── */}
         {!isOnline && !isCheckingHealth && (
           <div className="p-4 rounded-2xl bg-phish-bg border border-phish-border text-phish-dark text-xs font-mono flex items-start sm:items-center justify-between gap-3 shadow-xs">

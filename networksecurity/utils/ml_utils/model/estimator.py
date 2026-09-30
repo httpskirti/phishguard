@@ -23,3 +23,12 @@ class NetworkModel:
             return self.model.predict(x_transform)
         except Exception as e:
             raise NetworkSecurityException(e, sys)
+
+    def predict_proba(self, x):
+        try:
+            x_transform = self.preprocessor.transform(x)
+            if hasattr(self.model, "predict_proba"):
+                return self.model.predict_proba(x_transform)
+            raise AttributeError(f"{type(self.model).__name__} does not support predict_proba")
+        except Exception as e:
+            raise NetworkSecurityException(e, sys)
