@@ -10,7 +10,7 @@ export default function VerdictBadge({ verdict }) {
   const isLegit = verdict === 'Legitimate' || Number(verdict) === 1;
 
   if (isLegit) {
-    return (
+    return ( 
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold font-mono bg-legit-bg text-legit-dark border border-legit-border">
         <ShieldCheck className="w-3.5 h-3.5 text-legit-dark" />
         Legitimate
