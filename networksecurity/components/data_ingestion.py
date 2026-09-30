@@ -29,7 +29,10 @@ class DataIngestion:
             if POSTGRES_URL:
                 try:
                     logger.info(f"Connecting to PostgreSQL database to read table '{table_name}'")
-                    engine = create_engine(POSTGRES_URL)
+                    pg_url = POSTGRES_URL
+                    if pg_url.startswith("postgresql://"):
+                        pg_url = pg_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+                    engine = create_engine(pg_url)
                     df = pd.read_sql(f"SELECT * FROM {table_name}", engine)
                     if "id" in df.columns.to_list():
                         df = df.drop(columns=["id"])

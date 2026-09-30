@@ -11,6 +11,12 @@ load_dotenv()
 POSTGRES_URL = os.getenv("POSTGRES_URL")
 
 
+def _normalize_postgres_url(url: str) -> str:
+    if url and url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    return url
+
+
 class NetworkDataExtract:
     """
     Extracts raw dataset from a local CSV and pushes it
@@ -21,7 +27,7 @@ class NetworkDataExtract:
         try:
             if not POSTGRES_URL:
                 raise ValueError("POSTGRES_URL is not set in the environment or .env file")
-            self.engine = create_engine(POSTGRES_URL)
+            self.engine = create_engine(_normalize_postgres_url(POSTGRES_URL))
         except Exception as e:
             raise NetworkSecurityException(e, sys)
 
@@ -35,7 +41,7 @@ class NetworkDataExtract:
             logger.info(f"Loaded DataFrame with shape: {df.shape}")
 
             logger.info(f"Pushing records to PostgreSQL table: {table_name}")
-            df.to_sql(name=table_name, con=self.engine, if_exists="replace", index=False)
+            df.to_sql(name=table_name, con=self.engine, if_exists="replace", index=False, chunksize=1000)
             logger.info(f"Successfully pushed {len(df)} records into '{table_name}' table")
 
             return len(df)
