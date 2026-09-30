@@ -32,8 +32,7 @@ from networksecurity.utils.main_utils.utils import (
 )
 from networksecurity.utils.ml_utils.model.estimator import NetworkModel
 
-# dagshub.init(repo_owner="<your_username>", repo_name="<your_repo>", mlflow=True)
-# mlflow.set_registry_uri("https://dagshub.com/<your_username>/<your_repo>.mlflow")
+dagshub.init(repo_owner='httpskirti', repo_name='phishguard', mlflow=True)
 
 
 class ModelTrainer:
@@ -51,9 +50,21 @@ class ModelTrainer:
     def track_mlflow(self, model, classification_metric: ClassificationMetricArtifact, run_name: str):
         try:
             with mlflow.start_run(run_name=run_name):
+                # Log model parameters
+                mlflow.log_param("model_name", run_name)
+                best_params = model.get_params()
+                for param_name, param_value in best_params.items():
+                    try:
+                        mlflow.log_param(param_name, param_value)
+                    except Exception:
+                        pass  # skip params that MLflow can't serialize
+
+                # Log metrics
                 mlflow.log_metric("f1_score", classification_metric.f1_score)
                 mlflow.log_metric("precision_score", classification_metric.precision_score)
                 mlflow.log_metric("recall_score", classification_metric.recall_score)
+
+                # Log the model artifact
                 mlflow.sklearn.log_model(model, "model")
         except Exception as e:
             logger.warning(f"MLflow tracking skipped or failed: {e}")
