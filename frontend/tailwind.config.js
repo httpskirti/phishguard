@@ -7,19 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary navy/indigo for headers and CTAs
+        // Safety orange from the editorial/operations visual system.
         primary: {
-          50:  '#EEF2FF',
-          100: '#E0E7FF',
-          200: '#C7D2FE',
-          300: '#A5B4FC',
-          400: '#818CF8',
-          500: '#6366F1',
-          600: '#4F46E5',
-          700: '#4338CA',
-          800: '#3730A3',
-          900: '#312E81',
-          950: '#1E1B4B',
+          50:  '#FFF4EA',
+          100: '#FFE4CF',
+          200: '#FFC99E',
+          300: '#FDA669',
+          400: '#F88935',
+          500: '#EF6F19',
+          600: '#D95B0F',
+          700: '#B8490D',
+          800: '#933B12',
+          900: '#773313',
+          950: '#401706',
         },
         // Danger / phishing signals
         phish: {
@@ -45,18 +45,18 @@ export default {
           bg:     '#FFFBEB',
           border: '#FDE68A',
         },
-        // Admin accent (purple)
+        // Admin remains visually related but restricted by context.
         admin: {
-          light:  '#F3E8FF',
-          DEFAULT:'#A855F7',
-          dark:   '#7C3AED',
-          bg:     '#FAF5FF',
-          border: '#DDD6FE',
+          light:  '#FFE4CF',
+          DEFAULT:'#EF6F19',
+          dark:   '#B8490D',
+          bg:     '#FFF4EA',
+          border: '#FFC99E',
         },
       },
       fontFamily: {
-        mono: ['"JetBrains Mono"', '"IBM Plex Mono"', 'ui-monospace', 'monospace'],
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        sans: ['Archivo', 'system-ui', 'sans-serif'],
       },
     },
   },

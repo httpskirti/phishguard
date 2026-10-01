@@ -1,58 +1,24 @@
 import React, { useState } from 'react';
-import { Globe, Image as ImageIcon } from 'lucide-react';
+import { Globe2, Image as ImageIcon } from 'lucide-react';
 import UrlForm from './UrlForm';
 import ImageUpload from './ImageUpload';
 
 export default function ScanPanel({ onScanUrl, onScanImage, isLoading, isOnline }) {
-  const [activeTab, setActiveTab] = useState('URL'); // 'URL' | 'IMAGE'
-
+  const [activeTab, setActiveTab] = useState('URL');
   return (
-    <section className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-      {/* Tab Switcher */}
-      <div className="flex items-center gap-2 border-b border-gray-100 pb-4 mb-5">
-        <button
-          type="button"
-          onClick={() => setActiveTab('URL')}
-          disabled={isLoading}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-            activeTab === 'URL'
-              ? 'bg-primary-50 text-primary-700 border border-primary-200 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <Globe className="w-4 h-4" />
-          Check a URL
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('IMAGE')}
-          disabled={isLoading}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-            activeTab === 'IMAGE'
-              ? 'bg-primary-50 text-primary-700 border border-primary-200 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <ImageIcon className="w-4 h-4" />
-          Upload Screenshot (OCR)
-        </button>
+    <div className="scan-workbench">
+      <div className="workbench-head">
+        <div><span>Target input</span><strong>Start a new inspection</strong></div>
+        <div className="scan-tabs" role="tablist" aria-label="Scan source">
+          <button role="tab" aria-selected={activeTab === 'URL'} onClick={() => setActiveTab('URL')} disabled={isLoading}><Globe2 /> URL</button>
+          <button role="tab" aria-selected={activeTab === 'IMAGE'} onClick={() => setActiveTab('IMAGE')} disabled={isLoading}><ImageIcon /> Screenshot</button>
+        </div>
       </div>
-
-      {/* Tab Content */}
-      {activeTab === 'URL' ? (
-        <UrlForm
-          onScanUrl={onScanUrl}
-          isLoading={isLoading}
-          isOnline={isOnline}
-        />
-      ) : (
-        <ImageUpload
-          onScanImage={onScanImage}
-          isLoading={isLoading}
-          isOnline={isOnline}
-        />
-      )}
-    </section>
+      <div className="workbench-body">
+        {activeTab === 'URL'
+          ? <UrlForm onScanUrl={onScanUrl} isLoading={isLoading} isOnline={isOnline} />
+          : <ImageUpload onScanImage={onScanImage} isLoading={isLoading} isOnline={isOnline} />}
+      </div>
+    </div>
   );
 }
